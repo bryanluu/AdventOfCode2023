@@ -4,17 +4,20 @@
 advent_year=2022
 programs=("clojure" "python" "node")
 extensions=("clj" "py" "js")
+cycle_count=${#programs[@]}
 
 finish="finish_day.bash"
+# if the previous day has already been finished
 if [ -f $finish ]
 then
 
   year=$(date +%Y)
   month=`date +%m`
   hour=`date +%H`
-  if ([ $year == $advent_year ] && [ $month != 12 ]\
-     && ( [ $month != 11 ] || [ $hour -lt 21 ] ) )\
-     || [ $(($year < $advent_year)) == 1 ] # Too early
+  # if the advent_year's challenges haven't been release yet
+  if ([ $year == $advent_year ] && [ $month != 12 ] \
+      && ( [ $month != 11 ] || [ $hour -lt 21 ] ) ) \
+      || [ $(($year < $advent_year)) == 1 ] # Too early
   then
     echo "Advent of Code $advent_year hasn't started yet!"
   else
@@ -25,20 +28,24 @@ then
     days=${days#0}
     today=${today#0}
     hour=$(date +%H)
+    # if the next day's challenge hasn't been released yet
     if [ $year == $advent_year ] && ([ $(($days > $today)) == 1 ] || ([ $today == $days ] && [ $(($hour < 21)) == 1 ]))
     then
       echo "Too early! Wait until December $(($days)) $advent_year"\
       ", 9pm PST for the next challenge."
     else
-
-      day=$(($days+1))
-
+      # keep a table of time spent on each day
       timefile="times.csv"
 
-      i=$(($day%3))
+      # cycle between programs each day
+      day=$(( $days+1 ))
+      i=$(( $day%$cycle_count ))
       prog=${programs[i]}
       ext=${extensions[i]}
 
+      # handle inputs
+      # if program is specified, use it
+      # if specific day is specified, solve for that day
       force=""
       input_day=""
       input_prog=""
@@ -57,11 +64,13 @@ then
       done
 
       if [ -n "$input_prog" ]; then
-        for ((i=0;i<${#programs[@]};i++))
+        # use input_prog if it's one of the valid programs
+        for ((i=0;i<$cycle_count;i++))
         do
           if [ "$input_prog" == "${programs[i]}" ]; then
             prog=$input_prog
             ext=${extensions[i]}
+            break
           fi
         done
       fi
@@ -82,7 +91,12 @@ then
         fi
       elif [ $(($day > 25)) == 1 ] && [ -z $input_day ]; then
         echo "Day required now..."
-        echo "Usage: . start_next.bash [-f|--force] [-p|--program ruby|node|python] day"
+        unset progs_str
+        for p in $programs
+        do
+          progs_str=$progs_str${progs_str:+|}$p
+        done
+        echo "Usage: . start_next.bash [-f|--force] [-p|--program $progs_str] day"
         skip=true
       elif [ -n "$input_day" ]; then
         echo "Invalid day given: $input_day"
@@ -97,14 +111,15 @@ then
       if [ $skip == false ]; then
 
         echo "Working on Day $day using $prog..."
-        dir="Day$day"
-        codefile="Day$day.$ext"
+        padded_day=$((( $day < 10 )) && echo "0")$day
+        dir="Day$padded_day"
+        codefile="Day$padded_day.$ext"
 
         mkdir -p $dir
         mv $finish $dir
 
-        [ ! -f "$dir/$codefile" ] && cp "Templates/${prog}_template.$ext"\
-           "$dir/$codefile" # Copy template if the file doesn't exist
+        [ ! -f "$dir/$codefile" ] && cp "Templates/${prog}_template.$ext" \
+            "$dir/$codefile" # Copy template if the file doesn't exist
         # cd $dir
 
         date > "$dir/start"

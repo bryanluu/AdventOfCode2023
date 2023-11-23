@@ -5,6 +5,7 @@ advent_year=2022
 programs=("node" "bb" "python")
 extensions=("js" "clj" "py")
 cycle_count=${#programs[@]}
+editor="code"
 
 finish="finish_day.bash"
 # if the previous day has already been finished
@@ -131,7 +132,7 @@ then
         echo "$prog $codefile" '$@' >> "$tester"
         chmod +x "$tester"
 
-        subl "$dir/$codefile" # start editing
+        $editor "$dir/$codefile" # start editing
 
       fi
 

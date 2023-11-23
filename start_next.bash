@@ -2,8 +2,8 @@
 # This file starts the next or given day's challenge for the Advent of Code
 
 advent_year=2022
-programs=("bb" "python" "node")
-extensions=("clj" "py" "js")
+programs=("node" "bb" "python")
+extensions=("js" "clj" "py")
 cycle_count=${#programs[@]}
 
 finish="finish_day.bash"

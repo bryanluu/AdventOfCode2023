@@ -55,9 +55,9 @@ echo "$day,$parts,$st,$end,$note" >> $timefile
 rm start
 
 case $(($day%3)) in
-  0) ext="bb";;
-  1) ext="py";;
-  2) ext="js";;
+  0) ext="js";;
+  1) ext="clj";;
+  2) ext="py";;
 esac
 
 dir=$PWD

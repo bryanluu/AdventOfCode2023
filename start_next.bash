@@ -1,7 +1,7 @@
 #!/bin/bash
 # This file starts the next or given day's challenge for the Advent of Code
 
-advent_year=2022
+advent_year=2023
 programs=("node" "bb" "python")
 extensions=("js" "clj" "py")
 cycle_count=${#programs[@]}

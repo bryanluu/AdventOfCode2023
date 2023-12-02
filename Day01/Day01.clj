@@ -3,7 +3,7 @@
 (require '[clojure.string :as str])
 
 (defn extract-calibration-value [line]
-  (-> (re-seq #"\d+" line)
+  (-> (re-seq #"\d" line)
       vec
       (#(list (first %) (last %)))
       (str/join)
@@ -15,9 +15,8 @@
     (->> lines
          (map str/trim)
          (map extract-calibration-value)
-         (reduce +)
-         prn)))
+         (reduce +))))
 
 (let [input-file (first *command-line-args*)]
   (println "Input file: " input-file)
-  (time (solve input-file)))
+  (println "Part 1" (time (solve input-file))))

@@ -37,16 +37,18 @@
    "nine" 9})
 
 (def cv-pattern-part-2
-  (re-pattern (re-pattern (str "\\d|" (str/join "|" (keys numbers))))))
+  (re-pattern (str "\\d|" (str/join "|" (keys numbers)))))
+(def reversed-cv-pattern-part-2
+  (re-pattern (str "\\d|" (str/join "|" (map str/reverse (keys numbers))))))
 
 (defn extract-calibration-value-part-2
   "Extracts the calibration value from a line of input."
   [line]
-  (let [->number #(get numbers % %)]
-    (some->> (re-seq cv-pattern-part-2 line)
+  (let [->number #(get numbers % %)
+        first-cv (re-find cv-pattern-part-2 line)
+        last-cv (str/reverse (re-find reversed-cv-pattern-part-2 (str/reverse line)))]
+    (some->> [first-cv last-cv]
              (map ->number)
-             vec
-             (#(list (first %) (last %)))
              (str/join)
              (parse-long))))
 

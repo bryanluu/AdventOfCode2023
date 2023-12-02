@@ -64,7 +64,7 @@ dir=$PWD
 echo "Congrats on completing the Day $day, part$partstr $parts! :)"
 echo "Times saved in '$(dirname $PWD)/times.csv'"
 
-mv $0 ..
+[ "$parts" != 1 ] && mv $0 ..
 
 read -p $"Commit solution into Git?"$'\n' reply
 [[ $reply =~ ^[Yy].*$ ]] && commit=true # commit if reply is Yes

@@ -25,10 +25,11 @@ then
 
     today=`date +%d`
     days=`ls -d Day* | wc -l`
+    hour=$(date +%H)
     # remove any leading zeroes
     days=${days#0}
     today=${today#0}
-    hour=$(date +%H)
+    hour=${hour#0}
     # if the next day's challenge hasn't been released yet
     if [ $year == $advent_year ] && ([ $(($days > $today)) == 1 ] || ([ $today == $days ] && [ $(($hour < 21)) == 1 ]))
     then

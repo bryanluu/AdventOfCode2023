@@ -5,12 +5,11 @@ end=$(date)
 folder=${PWD##*/}
 if [ ${folder//[0-9]/} != Day ]
 then
-echo "Cannot run this yet! Start by running './start_next.bash [-f|--force] [-p|--program ruby|node|python] [day]' first..."
+echo "Cannot run this yet! Start by running './start_next.bash [-f|--force] [-p|--program node|bb|python] [day]' first..."
 exit 1
 else
 
 day=${folder//[^0-9]/}
-unpadded_day=${day//#0/}
 
 timefile="../times.csv"
 if [ ! -f $timefile ]
@@ -21,7 +20,7 @@ echo "Day,Part(s),Start,End,Notes" > $timefile
 fi
 
 # get number of parts already saved for this day
-entries=$(egrep -c -e "^$unpadded_day,1,.*$" $timefile)
+entries=$(egrep -c -e "^$day,1,.*$" $timefile)
 
 parts="$(($entries+1))"
 partstr=""

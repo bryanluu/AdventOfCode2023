@@ -72,6 +72,7 @@ read -p $"Commit solution into Git?"$'\n' reply
 [ "$commit" == true ] || exit 0 # exit if don't wanna commit changes
 
 git add $dir $timefile $FILE
+git add $(dirname $dir)
 git commit -m ":smiley: Added solution for Day $day, Part$partstr $parts and updated times.csv"
 git commit --amend
 

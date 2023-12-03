@@ -5,7 +5,7 @@ end=$(date)
 folder=${PWD##*/}
 if [ ${folder//[0-9]/} != Day ]
 then
-echo "Cannot run this yet! Start by running './start_next.bash [-f|--force] [-p|--program node|bb|python] [day]' first..."
+echo "Cannot run this yet! Start by running './start_next.bash [-f|--force] [-p|--program bb|python] [day]' first..."
 exit 1
 else
 
@@ -54,9 +54,8 @@ echo "$day,$parts,$st,$end,$note" >> $timefile
 rm start
 
 case $(($day%3)) in
-  0) ext="js";;
-  1) ext="clj";;
-  2) ext="py";;
+  0) ext="clj";;
+  1) ext="py";;
 esac
 
 dir=$PWD

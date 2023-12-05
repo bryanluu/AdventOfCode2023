@@ -16,25 +16,33 @@ class EngineSchematic:
         """Returns all the numbers that are part numbers"""
         return [number for number in self.numbers if number["is_part"]]
 
-    def is_near_pattern(self, number):
-        """Returns whether a number is next to a pattern"""
-        num_start = (number["row"], number["col"])
-        num_end = (number["row"] + len(str(number["num"])), number["col"] + 1)
-        p = re.compile(self.SYMBOL_REGEX)
+    def get_neighbor_positions(self, number):
+        """Returns the neighboring positions of the number"""
+        start = (number["row"], number["col"])
+        end = (number["row"] + 1, number["col"] + len(str(number["value"])))
+        sides = [
+            (r, c)
+            for r in [start[0]]
+            for c in [start[1] - 1, end[1]]
+            if c >= 0 and c < self.width
+        ]
         above_and_below = [
             (r, c)
-            for r in [num_start[0] - 1, num_end[0]]
-            for c in range(num_start[1] - 1, num_end[1])
+            for r in [start[0] - 1, end[0]]
+            for c in range(start[1] - 1, end[1] + 1)
             if r >= 0 and r < self.height and c >= 0 and c < self.width
         ]
-        sides = [(r, c) for r in [num_start[0]] for c in [num_start[1] - 1, num_end[1]]]
-        # Loop through all the neighbours and check if any are symbols
-        for row, col in above_and_below + sides:
+        return sides + above_and_below
+
+    def is_near_pattern(self, number):
+        """Returns whether a number is next to a pattern"""
+        p = re.compile(self.SYMBOL_REGEX)
+        for row, col in self.get_neighbor_positions(number):
             if p.match(self.grid[row, col]):
-                return False
+                return True
 
         # If we get here, we didn't find any symbols
-        return True
+        return False
 
     def find_numbers(self):
         """Find all the numbers in the schematic, including whether they are part numbers or not"""
@@ -45,7 +53,7 @@ class EngineSchematic:
             for m in p.finditer(line):
                 num_str = m.group(1)
                 col = m.start(1)
-                number = {"row": row, "col": col, "num": int(num_str)}
+                number = {"row": row, "col": col, "value": int(num_str)}
                 number["is_part"] = self.is_near_pattern(number)
                 self.numbers.append(number)
 
@@ -63,7 +71,9 @@ class EngineSchematic:
 
 
 def solve_part_1(lines):
-    pass  # DO STUFF
+    raw_file_input = "\n".join(map(lambda line: line.strip(), lines))
+    schematic = EngineSchematic(raw_file_input)
+    return sum([number["value"] for number in schematic.part_numbers])
 
 
 def solve_part_2(lines):

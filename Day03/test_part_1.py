@@ -16,5 +16,7 @@ def test_engine_schematic():
     schematic = sut.EngineSchematic(raw_schematic)
 
     assert schematic.grid.shape == (10, 10)
+    assert schematic.numbers[0]["value"] == 467
+    assert schematic.get_neighbor_positions(schematic.numbers[0]) == [(0, 3), (1, 0), (1, 1), (1, 2), (1, 3)]
     assert len(schematic.numbers) == 10
     assert len(schematic.part_numbers) == 8

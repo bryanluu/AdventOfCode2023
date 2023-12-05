@@ -2,10 +2,10 @@
 import sys
 filename = sys.argv[1] if len(sys.argv) > 1 else "input.txt"
 
-def solve_part_1(filename):
+def solve_part_1(lines):
     pass # DO STUFF
 
-def solve_part_2(filename):
+def solve_part_2(lines):
     pass # DO STUFF
 
 if __name__ == '__main__':

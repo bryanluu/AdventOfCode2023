@@ -12,14 +12,30 @@ class EngineSchematic:
     SYMBOL_REGEX = r"([^0-9\.])"
 
     @property
+    def gear_ratios(self):
+        """Returns the gear ratios"""
+        return {
+            gear_pos: ratios[0] * ratios[1] for gear_pos, ratios in self.gears.items()
+        }
+
+    @property
+    def gears(self):
+        """Returns all the valid gears"""
+        return {
+            gear_pos: ratios
+            for gear_pos, ratios in self.__gears.items()
+            if len(self.__gears[gear_pos]) == 2
+        }
+
+    @property
     def part_numbers(self):
         """Returns all the numbers that are part numbers"""
-        return [number for number in self.numbers if number["is_part"]]
+        return [number for number in self.numbers if number["nearby_symbols"]]
 
     def get_neighbor_positions(self, number):
         """Returns the neighboring positions of the number"""
-        start = (number["row"], number["col"])
-        end = (number["row"] + 1, number["col"] + len(str(number["value"])))
+        start = number["start"]
+        end = (number["start"][0] + 1, number["start"][1] + len(str(number["value"])))
         sides = [
             (r, c)
             for r in [start[0]]
@@ -34,27 +50,42 @@ class EngineSchematic:
         ]
         return sides + above_and_below
 
-    def is_near_pattern(self, number):
-        """Returns whether a number is next to a pattern"""
+    def symbols_nearby(self, number):
+        """Returns any symbols next to number"""
         p = re.compile(self.SYMBOL_REGEX)
+        symbols = []
         for row, col in self.get_neighbor_positions(number):
             if p.match(self.grid[row, col]):
-                return True
+                symbol = {"pos": (row, col), "value": self.grid[row, col]}
+                symbols.append(symbol)
 
-        # If we get here, we didn't find any symbols
-        return False
+        return symbols if len(symbols) > 0 else None
+
+    def register_number_to_gear(self, number, gear):
+        """Register the number to a gear"""
+        self.__gears[gear["pos"]] = self.__gears.get(gear["pos"], [])
+        self.__gears[gear["pos"]].append(number["value"])
+
+    def register_nearby_gears(self, number):
+        """Register the number to any gears nearby"""
+        if number["nearby_symbols"]:
+            for symbol in number["nearby_symbols"]:
+                if symbol["value"] == "*":
+                    self.register_number_to_gear(number, symbol)
 
     def find_numbers(self):
-        """Find all the numbers in the schematic, including whether they are part numbers or not"""
+        """Find all the numbers in the schematic, extracting nearby symbols"""
         p = re.compile(self.NUMBER_REGEX)
         self.numbers = []
+        self.__gears = {}
 
         for row, line in enumerate(self.raw_schematic.splitlines()):
             for m in p.finditer(line):
                 num_str = m.group(1)
                 col = m.start(1)
-                number = {"row": row, "col": col, "value": int(num_str)}
-                number["is_part"] = self.is_near_pattern(number)
+                number = {"start": (row, col), "value": int(num_str)}
+                number["nearby_symbols"] = self.symbols_nearby(number)
+                self.register_nearby_gears(number)
                 self.numbers.append(number)
 
     def parse_schematic(self):
@@ -77,7 +108,9 @@ def solve_part_1(lines):
 
 
 def solve_part_2(lines):
-    pass  # DO STUFF
+    raw_file_input = "\n".join(map(lambda line: line.strip(), lines))
+    schematic = EngineSchematic(raw_file_input)
+    return sum(schematic.gear_ratios.values())
 
 
 if __name__ == "__main__":

@@ -65,18 +65,36 @@
   "Convert a list of cards to a map of cards keyed by ID."
   [cards]
   (into {}
-        (juxt :id identity)
+        (map (juxt :id identity))
         cards))
 
 (defn process-card-rule
   "Reducer that processes a card rule and returns the updated map of cards"
-  [cards card]
-  (let [id (:id card)]))
+  [processed-cards card]
+  (let [id (:id card)
+        common-numbers (set/intersection (:winning-numbers card)
+                                         (:my-numbers card))
+        ;; set copies of card if not already set
+        new-card (assoc card :copies (get-in processed-cards [id :copies] 0))
+        ;; common + 1 because we have to include the card itself
+        new-copies (inc (:copies new-card))
+        ;; ids of cards to copy
+        cards-to-copy (into []
+                            (map inc)
+                            (range id (+ id (count common-numbers))))]
+    (loop [cards processed-cards
+           to-copy cards-to-copy]
+      (if (empty? to-copy)
+        (assoc cards id new-card)
+        (let [copied (first to-copy)
+              new-cards (update-in cards [copied :copies] (fnil + 0) new-copies)]
+          (recur new-cards (rest to-copy)))))))
 
 (defn process-rules
   "Given a list of parsed cards, process the real rules for each card and
    record any copies of cards"
-  [cards])
+  [cards]
+  (reduce process-card-rule (cards-seq->cards-map cards) cards))
 
 (defn solve-part-2 [input]
   ;; Do stuff
@@ -132,14 +150,15 @@
          3 {:id 3
             :winning-numbers #{1 21 53 59 44}
             :my-numbers #{69 82 63 72 16 21 14 1}
-            :copies 1}
+            :copies 0}
          4 {:id 4
             :winning-numbers #{41 92 73 84 69}
             :my-numbers #{59 84 76 51 58 5 54 83}
             :copies 1}
          5 {:id 5
             :winning-numbers #{87 83 26 28 32}
-            :my-numbers #{88 30 70 12 93 22 82 36}}}
+            :my-numbers #{88 30 70 12 93 22 82 36}
+            :copies 1}}
         card {:id 3
               :winning-numbers #{1 21 53 59 44}
               :my-numbers #{69 82 63 72 16 21 14 1}}]
@@ -183,35 +202,49 @@
            (process-card-rule before card)))))
 
 (deftest test-process-rules
-  (let [cards [{:id 2
+  (let [cards [{:id 1
+                :winning-numbers #{41 48 83 86 17}
+                :my-numbers #{83 86 6 31 17 9 48 53}}
+               {:id 2
                 :winning-numbers #{13 32 20 16 61}
                 :my-numbers #{61 30 68 82 17 32 24 19}}
                {:id 3
                 :winning-numbers #{1 21 53 59 44}
-                :my-numbers #{69 82 63 72 16 21 14 7}}
+                :my-numbers #{69 82 63 72 16 21 14 1}}
                {:id 4
                 :winning-numbers #{41 92 73 84 69}
                 :my-numbers #{59 84 76 51 58 5 54 83}}
                {:id 5
                 :winning-numbers #{87 83 26 28 32}
-                :my-numbers #{88 30 70 12 93 22 82 36}}]
+                :my-numbers #{88 30 70 12 93 22 82 36}}
+               {:id 6
+                :winning-numbers #{31 18 13 56 72}
+                :my-numbers #{74 77 10 23 35 67 36 11}}]
         processed-cards
-        {2 {:id 2
+        {1 {:id 1
+            :winning-numbers #{41 48 83 86 17}
+            :my-numbers #{83 86 6 31 17 9 48 53}
+            :copies 0}
+         2 {:id 2
             :winning-numbers #{13 32 20 16 61}
             :my-numbers #{61 30 68 82 17 32 24 19}
-            :copies 0}
+            :copies 1}
          3 {:id 3
             :winning-numbers #{1 21 53 59 44}
-            :my-numbers #{69 82 63 72 16 21 14 7}
-            :copies 1}
+            :my-numbers #{69 82 63 72 16 21 14 1}
+            :copies 3}
          4 {:id 4
             :winning-numbers #{41 92 73 84 69}
             :my-numbers #{59 84 76 51 58 5 54 83}
-            :copies 3}
+            :copies 7}
          5 {:id 5
             :winning-numbers #{87 83 26 28 32}
             :my-numbers #{88 30 70 12 93 22 82 36}
-            :copies 5}}]
+            :copies 13}
+         6 {:id 6
+            :winning-numbers #{31 18 13 56 72}
+            :my-numbers #{74 77 10 23 35 67 36 11}
+            :copies 0}}]
     (is (= processed-cards (process-rules cards)))))
 
 (deftest test-solve-part-2

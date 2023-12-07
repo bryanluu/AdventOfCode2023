@@ -74,10 +74,9 @@
   (let [id (:id card)
         common-numbers (set/intersection (:winning-numbers card)
                                          (:my-numbers card))
-        ;; set copies of card if not already set
-        new-card (assoc card :copies (get-in processed-cards [id :copies] 0))
-        ;; common + 1 because we have to include the card itself
-        new-copies (inc (:copies new-card))
+        ;; set instances of card if not already set
+        new-card (assoc card :instances (get-in processed-cards [id :instances] 1))
+        new-copies (:instances new-card)
         ;; ids of cards to copy
         cards-to-copy (into []
                             (map inc)
@@ -87,7 +86,7 @@
       (if (empty? to-copy)
         (assoc cards id new-card)
         (let [copied (first to-copy)
-              new-cards (update-in cards [copied :copies] (fnil + 0) new-copies)]
+              new-cards (update-in cards [copied :instances] (fnil + 1) new-copies)]
           (recur new-cards (rest to-copy)))))))
 
 (defn process-rules
@@ -102,7 +101,7 @@
                     (map parse-card)
                     lines)
         processed-cards (process-rules cards)]
-    (reduce + (map (comp inc :copies) (vals processed-cards)))))
+    (reduce + (map :instances (vals processed-cards)))))
 
 ;; Tests
 
@@ -154,15 +153,15 @@
          3 {:id 3
             :winning-numbers #{1 21 53 59 44}
             :my-numbers #{69 82 63 72 16 21 14 1}
-            :copies 0}
+            :instances 1}
          4 {:id 4
             :winning-numbers #{41 92 73 84 69}
             :my-numbers #{59 84 76 51 58 5 54 83}
-            :copies 1}
+            :instances 2}
          5 {:id 5
             :winning-numbers #{87 83 26 28 32}
             :my-numbers #{88 30 70 12 93 22 82 36}
-            :copies 1}}
+            :instances 2}}
         card {:id 3
               :winning-numbers #{1 21 53 59 44}
               :my-numbers #{69 82 63 72 16 21 14 1}}]
@@ -175,11 +174,11 @@
          3 {:id 3
             :winning-numbers #{1 21 53 59 44}
             :my-numbers #{69 82 63 72 16 21 14 1}
-            :copies 1}
+            :instances 2}
          4 {:id 4
             :winning-numbers #{41 92 73 84 69}
             :my-numbers #{59 84 76 51 58 5 54 83}
-            :copies 1}
+            :instances 2}
          5 {:id 5
             :winning-numbers #{87 83 26 28 32}
             :my-numbers #{88 30 70 12 93 22 82 36}}}
@@ -190,15 +189,15 @@
          3 {:id 3
             :winning-numbers #{1 21 53 59 44}
             :my-numbers #{69 82 63 72 16 21 14 1}
-            :copies 1}
+            :instances 2}
          4 {:id 4
             :winning-numbers #{41 92 73 84 69}
             :my-numbers #{59 84 76 51 58 5 54 83}
-            :copies 3}
+            :instances 4}
          5 {:id 5
             :winning-numbers #{87 83 26 28 32}
             :my-numbers #{88 30 70 12 93 22 82 36}
-            :copies 2}}
+            :instances 3}}
         card {:id 3
               :winning-numbers #{1 21 53 59 44}
               :my-numbers #{69 82 63 72 16 21 14 1}}]
@@ -228,27 +227,27 @@
         {1 {:id 1
             :winning-numbers #{41 48 83 86 17}
             :my-numbers #{83 86 6 31 17 9 48 53}
-            :copies 0}
+            :instances 1}
          2 {:id 2
             :winning-numbers #{13 32 20 16 61}
             :my-numbers #{61 30 68 82 17 32 24 19}
-            :copies 1}
+            :instances 2}
          3 {:id 3
             :winning-numbers #{1 21 53 59 44}
             :my-numbers #{69 82 63 72 16 21 14 1}
-            :copies 3}
+            :instances 4}
          4 {:id 4
             :winning-numbers #{41 92 73 84 69}
             :my-numbers #{59 84 76 51 58 5 54 83}
-            :copies 7}
+            :instances 8}
          5 {:id 5
             :winning-numbers #{87 83 26 28 32}
             :my-numbers #{88 30 70 12 93 22 82 36}
-            :copies 13}
+            :instances 14}
          6 {:id 6
             :winning-numbers #{31 18 13 56 72}
             :my-numbers #{74 77 10 23 35 67 36 11}
-            :copies 0}}]
+            :instances 1}}]
     (is (= processed-cards (process-rules cards)))))
 
 (deftest test-solve-part-2

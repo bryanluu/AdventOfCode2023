@@ -97,8 +97,12 @@
   (reduce process-card-rule (cards-seq->cards-map cards) cards))
 
 (defn solve-part-2 [input]
-  ;; Do stuff
-  )
+  (let [lines (str/split-lines input)
+        cards (into []
+                    (map parse-card)
+                    lines)
+        processed-cards (process-rules cards)]
+    (reduce + (map (comp inc :copies) (vals processed-cards)))))
 
 ;; Tests
 

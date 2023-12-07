@@ -61,6 +61,23 @@
   (.group m "myNumbers")
   :rcf)
 
+(defn cards-seq->cards-map
+  "Convert a list of cards to a map of cards keyed by ID."
+  [cards]
+  (into {}
+        (juxt :id identity)
+        cards))
+
+(defn process-card-rule
+  "Reducer that processes a card rule and returns the updated map of cards"
+  [cards card]
+  (let [id (:id card)]))
+
+(defn process-rules
+  "Given a list of parsed cards, process the real rules for each card and
+   record any copies of cards"
+  [cards])
+
 (defn solve-part-2 [input]
   ;; Do stuff
   )
@@ -72,6 +89,13 @@
           :winning-numbers #{1 21 53 59 44}
           :my-numbers #{69 82 63 72 16 21 14 1}}
          (parse-card "Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1"))))
+
+(deftest test-power-of-two
+  (is (= 1 (power-of-two 0)))
+  (is (= 2 (power-of-two 1)))
+  (is (= 4 (power-of-two 2)))
+  (is (= 8 (power-of-two 3)))
+  (is (= 16 (power-of-two 4))))
 
 (deftest test-compute-points
   (is (= {:id 3
@@ -87,10 +111,117 @@
   (let [input (slurp "example.txt")]
     (is (= 13 (solve-part-1 input)))))
 
+(deftest test-process-card-rule
+  (let [before
+        {2 {:id 2
+            :winning-numbers #{13 32 20 16 61}
+            :my-numbers #{61 30 68 82 17 32 24 19}}
+         3 {:id 3
+            :winning-numbers #{1 21 53 59 44}
+            :my-numbers #{69 82 63 72 16 21 14 7}}
+         4 {:id 4
+            :winning-numbers #{41 92 73 84 69}
+            :my-numbers #{59 84 76 51 58 5 54 83}}
+         5 {:id 5
+            :winning-numbers #{87 83 26 28 32}
+            :my-numbers #{88 30 70 12 93 22 82 36}}}
+        after
+        {2 {:id 2
+            :winning-numbers #{13 32 20 16 61}
+            :my-numbers #{61 30 68 82 17 32 24 19}}
+         3 {:id 3
+            :winning-numbers #{1 21 53 59 44}
+            :my-numbers #{69 82 63 72 16 21 14 1}
+            :copies 1}
+         4 {:id 4
+            :winning-numbers #{41 92 73 84 69}
+            :my-numbers #{59 84 76 51 58 5 54 83}
+            :copies 1}
+         5 {:id 5
+            :winning-numbers #{87 83 26 28 32}
+            :my-numbers #{88 30 70 12 93 22 82 36}}}
+        card {:id 3
+              :winning-numbers #{1 21 53 59 44}
+              :my-numbers #{69 82 63 72 16 21 14 1}}]
+    (is (= after
+           (process-card-rule before card))))
+  (let [before
+        {2 {:id 2
+            :winning-numbers #{13 32 20 16 61}
+            :my-numbers #{61 30 68 82 17 32 24 19}}
+         3 {:id 3
+            :winning-numbers #{1 21 53 59 44}
+            :my-numbers #{69 82 63 72 16 21 14 1}
+            :copies 1}
+         4 {:id 4
+            :winning-numbers #{41 92 73 84 69}
+            :my-numbers #{59 84 76 51 58 5 54 83}
+            :copies 1}
+         5 {:id 5
+            :winning-numbers #{87 83 26 28 32}
+            :my-numbers #{88 30 70 12 93 22 82 36}}}
+        after
+        {2 {:id 2
+            :winning-numbers #{13 32 20 16 61}
+            :my-numbers #{61 30 68 82 17 32 24 19}}
+         3 {:id 3
+            :winning-numbers #{1 21 53 59 44}
+            :my-numbers #{69 82 63 72 16 21 14 1}
+            :copies 1}
+         4 {:id 4
+            :winning-numbers #{41 92 73 84 69}
+            :my-numbers #{59 84 76 51 58 5 54 83}
+            :copies 3}
+         5 {:id 5
+            :winning-numbers #{87 83 26 28 32}
+            :my-numbers #{88 30 70 12 93 22 82 36}
+            :copies 2}}
+        card {:id 3
+              :winning-numbers #{1 21 53 59 44}
+              :my-numbers #{69 82 63 72 16 21 14 1}}]
+    (is (= after
+           (process-card-rule before card)))))
+
+(deftest test-process-rules
+  (let [cards [{:id 2
+                :winning-numbers #{13 32 20 16 61}
+                :my-numbers #{61 30 68 82 17 32 24 19}}
+               {:id 3
+                :winning-numbers #{1 21 53 59 44}
+                :my-numbers #{69 82 63 72 16 21 14 7}}
+               {:id 4
+                :winning-numbers #{41 92 73 84 69}
+                :my-numbers #{59 84 76 51 58 5 54 83}}
+               {:id 5
+                :winning-numbers #{87 83 26 28 32}
+                :my-numbers #{88 30 70 12 93 22 82 36}}]
+        processed-cards
+        {2 {:id 2
+            :winning-numbers #{13 32 20 16 61}
+            :my-numbers #{61 30 68 82 17 32 24 19}
+            :copies 0}
+         3 {:id 3
+            :winning-numbers #{1 21 53 59 44}
+            :my-numbers #{69 82 63 72 16 21 14 7}
+            :copies 1}
+         4 {:id 4
+            :winning-numbers #{41 92 73 84 69}
+            :my-numbers #{59 84 76 51 58 5 54 83}
+            :copies 3}
+         5 {:id 5
+            :winning-numbers #{87 83 26 28 32}
+            :my-numbers #{88 30 70 12 93 22 82 36}
+            :copies 5}}]
+    (is (= processed-cards (process-rules cards)))))
+
+(deftest test-solve-part-2
+  (let [input (slurp "example.txt")]
+    (is (= 30 (solve-part-2 input)))))
+
 (when (some->> *command-line-args*
                first
                io/as-file
-               #(.exists %))
+               (#(.exists %)))
   (let [input-file (first *command-line-args*)
         input (slurp input-file)]
     (println "Input file: " input-file)

@@ -83,10 +83,9 @@ def map_source_range(source_ranges: dict, mapping: dict) -> dict:
             mapped[src_start]["length"] = end - src_start
             mapped[src_start]["offset"] += mapping["offset"]
             # add the interval after range
-            offset_outside = source_ranges.get(end, {"offset": 0})["offset"]
             mapped[end] = {
                 "start": end,
-                "offset": offset_outside,
+                "offset": 0,
                 "length": src_end - end,
             }
         # elif src_end is inside but src_start is not
@@ -110,13 +109,22 @@ def map_source_range(source_ranges: dict, mapping: dict) -> dict:
                 "length": end - start,
             }
             # add the interval after range
-            offset_outside = source_ranges.get(end, {"offset": 0})["offset"]
             mapped[end] = {
                 "start": end,
-                "offset": offset_outside,
+                "offset": 0,
                 "length": src_end - end,
             }
     return mapped
+
+
+def update_mapped_ranges(mapped_ranges: dict) -> dict:
+    new_ranges = {}
+    for start, rng in mapped_ranges.items():
+        new_idx = start + rng["offset"]
+        rng["start"] = new_idx
+        rng["offset"] = 0
+        new_ranges[new_idx] = rng
+    return new_ranges
 
 
 def apply_map_to_source_ranges(source_ranges: dict, mappings_str: str) -> list:
@@ -124,13 +132,9 @@ def apply_map_to_source_ranges(source_ranges: dict, mappings_str: str) -> list:
     lines = mappings_str.split("\n")
     header = lines.pop(0)
 
-    print("src:", source_ranges)
-    for line in lines:
-        mapping = parse_range_mapping(line)
-        mapped = map_source_range(source_ranges, mapping)
-        print(line, mapped)
+    mapped = reduce(map_source_range, map(parse_range_mapping, lines), source_ranges)
 
-    return mapped
+    return update_mapped_ranges(mapped)
 
 
 def solve_part_2(lines):
@@ -138,7 +142,7 @@ def solve_part_2(lines):
     line_groups = "".join(lines).strip().split("\n\n")
 
     # initialize seeds
-    seed_ranges = line_groups.pop(0)
+    seed_ranges = parse_seed_ranges(line_groups.pop(0))
 
     # apply maps to seeds to obtain locations
     locations = reduce(apply_map_to_source_ranges, line_groups, seed_ranges)

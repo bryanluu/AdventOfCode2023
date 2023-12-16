@@ -63,6 +63,26 @@ def test_map_source_range():
     }
 
 
+def test_update_mapped_ranges():
+    mapped = {
+        1: {"start": 1, "length": 1, "offset": 8},
+        2: {"start": 2, "length": 2, "offset": 4},
+        4: {"start": 4, "length": 1, "offset": 0},
+        5: {"start": 5, "length": 1, "offset": 0},
+        6: {"start": 6, "length": 4, "offset": -6},
+        10: {"start": 10, "length": 2, "offset": 0},
+    }
+
+    assert sut.update_mapped_ranges_mapped_ranges(mapped) == {
+        9: {"start": 9, "length": 1, "offset": 0},
+        6: {"start": 6, "length": 2, "offset": 0},
+        4: {"start": 4, "length": 1, "offset": 0},
+        5: {"start": 5, "length": 1, "offset": 0},
+        0: {"start": 0, "length": 4, "offset": 0},
+        10: {"start": 10, "length": 2, "offset": 0},
+    }
+
+
 def test_apply_map_to_source_ranges():
     case_A = {
         4: {"start": 4, "length": 2, "offset": 0},
@@ -76,13 +96,14 @@ def test_apply_map_to_source_ranges():
 
     assert sut.apply_map_to_source_ranges(case_A, mapping_line) == {
         4: {"start": 4, "length": 2, "offset": 0},
-        7: {"start": 7, "length": 3, "offset": -6},
+        1: {"start": 1, "length": 3, "offset": 0},
     }
     assert sut.apply_map_to_source_ranges(case_B, mapping_line) == {
-        1: {"start": 1, "length": 1, "offset": 8},
-        2: {"start": 2, "length": 2, "offset": 4},
-        4: {"start": 4, "length": 2, "offset": 0},
-        6: {"start": 6, "length": 4, "offset": -6},
+        9: {"start": 9, "length": 1, "offset": 0},
+        6: {"start": 6, "length": 2, "offset": 0},
+        4: {"start": 4, "length": 1, "offset": 0},
+        5: {"start": 5, "length": 1, "offset": 0},
+        0: {"start": 0, "length": 4, "offset": 0},
         10: {"start": 10, "length": 2, "offset": 0},
     }
 
@@ -92,4 +113,4 @@ def test_part_2():
     with open(EXAMPLE_FILENAME, "r") as file:
         lines = file.readlines()
 
-    # assert sut.solve_part_2(lines) == 467835
+    assert sut.solve_part_2(lines) == 46
